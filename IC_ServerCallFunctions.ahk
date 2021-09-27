@@ -3,8 +3,8 @@
 ; // Updates installed after the date below may result in the pointer addresses not being valid.
 ; // Epic Games IC Version:  v0.403
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
-global SC_ScriptDate    := "2021/09/24"   ; USER: Cut and paste these in Discord when asking for help
-global SC_ScriptVersion := "2021.09.24.1" ; USER: Cut and paste these in Discord when asking for help
+global SC_ScriptDate    := "2021/09/26"   ; USER: Cut and paste these in Discord when asking for help
+global SC_ScriptVersion := "2021.09.26.1" ; USER: Cut and paste these in Discord when asking for help
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
 ; // Future Considerations / Areas of Interest
 ; // -use a class
@@ -14,6 +14,7 @@ global SC_ScriptVersion := "2021.09.24.1" ; USER: Cut and paste these in Discord
 ; // 20210918 1 - modified file header
 ; //            - moved DoChests() to main file
 ; // 20210924 1 - Initial fork update
+; // 20210926 1 - decoupled advtoload, indentation fixes, added chest input validator helper
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
 
 
@@ -32,7 +33,7 @@ global ActiveInstance :=
 global InstanceID :=
 global UserID :=
 global UserHash := ""
-global advtoload :=
+;global advtoload :=
 global gSilversHoarded := ;variable to store amount of chests hoarded
 global gSilversOpened := ;variable to store amount of chests opened
 global gGoldsHoarded := ;variable to store amount of chests hoarded
@@ -97,33 +98,39 @@ LoadAdventure(advID := 0, p := 0, pt := 0)   ;p - patron, pt - patron tier
 {
     if (advID == 0) 
     {
-        MsgBox advID
-        advID = advtoload
-        MsgBox advID
+        MsgBox,,, % "Can't load adventure with ID == " . advID
     }
     advparams := DummyData "&patron_tier=" p "&user_id=" UserID "&hash=" UserHash "&instance_id=" InstanceID "&game_instance_id=" ActiveInstance "&adventure_id=" advID "&patron_id=" pt
     ServerCall("setcurrentobjective", advparams)
     return
 }
 
+; // Helper function to reduce code duplication
+ValidateChestInput(Byref chests)
+{
+    if (chests < 1)
+        return false
+    if (chests > 99)
+        chests := 99
+    return true
+}
+
 BuyChests(chestID, chests)
 {
-    if (chests > 100)
-    chests := 100
-    else if (chests < 1)
-    return
-    chestparams := DummyData "&user_id=" UserID "&hash=" UserHash "&instance_id=" InstanceID "&chest_type_id=" chestid "&count=" chests
-    ServerCall("buysoftcurrencychest", chestparams)
+    if (ValidateChestInput(chests))
+    {
+        chestparams := DummyData "&user_id=" UserID "&hash=" UserHash "&instance_id=" InstanceID "&chest_type_id=" chestid "&count=" chests
+        ServerCall("buysoftcurrencychest", chestparams)
+    }
     return
 }
 
 OpenChests(chestID, chests)
 {
-    if (chests > 99)
-    chests := 99
-    else if (chests < 1)
-    return
-    chestparams := "&gold_per_second=0&checksum=4c5f019b6fc6eefa4d47d21cfaf1bc68&user_id=" UserID "&hash=" UserHash "&instance_id=" InstanceID "&chest_type_id=" chestid "&game_instance_id=" ActiveInstance "&count=" chests
-    ServerCall("opengenericchest", chestparams)
+    if (ValidateChestInput(chests))
+    {
+        chestparams := "&gold_per_second=0&checksum=4c5f019b6fc6eefa4d47d21cfaf1bc68&user_id=" UserID "&hash=" UserHash "&instance_id=" InstanceID "&chest_type_id=" chestid "&game_instance_id=" ActiveInstance "&count=" chests
+        ServerCall("opengenericchest", chestparams)
+    }
     return
 }
