@@ -3,8 +3,8 @@
 ; // Updates installed after the date below may result in the pointer addresses not being valid.
 ; // Epic Games IC Version:  v0.403
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
-global MF_ScriptDate    := "2021/09/24"   ; USER: Cut and paste these in Discord when asking for help
-global MF_ScriptVersion := "2021.09.24.1" ; USER: Cut and paste these in Discord when asking for help
+global MF_ScriptDate    := "2021/10/13"   ; USER: Cut and paste these in Discord when asking for help
+global MF_ScriptVersion := "2021.10.13.1" ; USER: Cut and paste these in Discord when asking for help
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
 ; // This file contains remory read functionality for Idle Champions scripting.  It also logs all
 ; // memory reads (currently partially rolled out) into a text file each day, to help with tracking
@@ -28,6 +28,7 @@ global MF_ScriptVersion := "2021.09.24.1" ; USER: Cut and paste these in Discord
 ; //            - expanded logging and also optimizing ReadMem encapsulation
 ; // 20210918 2 - more ReadMem rollouts
 ; // 20210924 1 - Initial fork update
+; // 20211013 1 - Updated ReadCoreExp found/tested by Fenume, 3rd offset from 0x38 to 0x40
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
 
 ; This class relies on classMemory.ahk
@@ -262,7 +263,7 @@ ReadHasteStacks(UpdateGUI := 0, GUIwindow := "MyWindow:")
 }
 
 ; // ReadCoreXP ///////////////////////////////////////////////////////////////////////////////////
-global offsetCXP := [0x10, 0x80, 0x38, 0x50] ; These are the offsets to get "ReadCoreXP"
+global offsetCXP := [0x10, 0x80, 0x40, 0x50] ; These are the offsets to get "ReadCoreXP"
 global lastCXP   := 0 ; We'll store last read value here so that logfile shows transition
 ReadCoreXP(UpdateGUI := 0, GUIwindow := "MyWindow:")
 {
@@ -289,17 +290,20 @@ ReadResettting(UpdateGUI := 0, GUIwindow := "MyWindow:")
 ; // ReadUserID ///////////////////////////////////////////////////////////////////////////////////
 global offsetUID := [0x20, 0xA8, 0x58] ; These are the offsets to get "ReadUserID"
 global lastUID   := 0 ; We'll store last read value here so that logfile shows transition
-ReadUserID()
-{
-    return ReadMem(lastUID, "ReadUserID", offsetUID) 
+ReadUserID(UpdateGUI := 0, GUIwindow := "MyWindow:")
+{                                                  ; TODO: remove GUI dependency
+    return ReadMem(lastUID, "ReadUserID", offsetUID, UpdateGUI, GUIwindow)  
 }
 
 ; // ReadUserHash /////////////////////////////////////////////////////////////////////////////////
-ReadUserHash()
+ReadUserHash(UpdateGUI := 0, GUIwindow := "MyWindow:")
 {
     Controller := idle.getAddressFromOffsets(ptrGCbase, ptrAGCoffsets*)
     pointerArray := [0x20, 0xA8, 0x20, 0x14]
     var := idle.readstring(Controller, bytes := 64, encoding := "UTF-16", pointerArray*)
+                                                      ; TODO: remove GUI dependency
+    if UpdateGUI
+        GuiControl, %GUIwindow%, ReadUserHashID, %var% %A_Hour%:%A_Min%:%A_Sec%.%A_MSec%
     return var
 }
 
