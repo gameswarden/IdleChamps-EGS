@@ -5,7 +5,7 @@
 ; // Epic Games IC Version:  v0.403
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
 global ScriptDate    := "2021/09/24"   ; USER: Cut and paste these in Discord when asking for help
-global ScriptVersion := "2021.09.24.1" ; USER: Cut and paste these in Discord when asking for help
+global ScriptVersion := "2021.10.14.1" ; USER: Cut and paste these in Discord when asking for help
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
 ; // Modron Automation Gem Farming Script for Epic Games Store
 ; // Original by mikebaldi1980 - steam focused
@@ -24,6 +24,8 @@ global ScriptVersion := "2021.09.24.1" ; USER: Cut and paste these in Discord wh
 ; // 20210919 1 - started reworking the Read First tab
 ; //            - added buttons and code to launch stuff off the resources tab
 ; // 20210924 1 - Initial fork update
+; // 20211014 1 - Fixed a bug where all F-Key toggles would show as activated in settings after
+;                 every reload.
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
 
 SetWorkingDir, %A_ScriptDir% ; The working directory is the Script Directory, log files are there
@@ -54,30 +56,33 @@ global gGetAddress  := 5000		;time in milliseconds after Idle Champions is opene
 ;PostMessage, 0x0101, 0xC0, 0xC0000001,, ahk_id %win%
 
 
-; This array of variables are used as on/off switches for whether to level/not level the heroes in these seats
-global gSeatToggle := [S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12]
-; This string of variables contains the Fx Keys for "on" Champions to level
-; Thanks ThePuppy for the ini code
-global gFKeys :=  ; Note: This loop reads in the seat toggles from the INI, and creates the Active Levelling Keys
-loop, 12   ; TODO: put in a function that can be called to re-string the actives when the user changes them live
-{
-	IniRead, S%A_Index%, UserSettings.ini, Section1, S%A_Index%
-	if (S%A_Index%)
-	{
-		gFKeys = %gFKeys%{F%A_Index%}
-	}
-}
-
 ; // GetSettingFromINI //////////////////////////////////////////////////////////////////////////////
 ; // Encapsulates reading values used by the script from the stored INI file UserSettings.ini
 ; // NOTE: uses the only one default section Section 1, and returns the value read at the key provided
 ; // myKeyName - string with the name of the item in the INI file
 ; // myDefVal  - default value to use for this setting in case the INI entry doesn't exist
-GetSettingFromINI(myKeyName, mydefVal)
-{	
-	IniRead, mytemp, UserSettings.ini, Section1, %myKeyName%, %myDefVal%
-	return mytemp
+
+; This string of variables contains the Fx Keys for "on" Champions to level
+; Thanks ThePuppy for the ini code
+global gFKeys :=  ; Note: This loop reads in the seat toggles from the INI, and creates the Active Levelling Keys
+loop, 12   ; TODO: put in a function that can be called to re-string the actives when the user changes them live
+{
+    IniRead, S%A_Index%, UserSettings.ini, Section1, S%A_Index%
+    if (S%A_Index%)
+    {
+        gFKeys = %gFKeys%{F%A_Index%}
+    }
 }
+
+GetSettingFromINI(myKeyName, mydefVal)
+{    
+    IniRead, mytemp, UserSettings.ini, Section1, %myKeyName%, %myDefVal%
+    return mytemp
+}
+
+; This array of variables are used as on/off switches for whether to level/not level the heroes in these seats.
+; This is used for the GUI and when saving the ini and needs to be filled after loading the data.
+global gSeatToggle := [S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12]
 
 ; // Let's read in all of the settings stored in the file that we need:
 global gStopLevZone  := GetSettingFromINI("ContinuedLeveling", 10) ;Stop levelling after this zone
