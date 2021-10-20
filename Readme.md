@@ -16,7 +16,7 @@ Review AutoHotkey tutorials and documentation.
 
 ## Notes:
 1. Script requires Briv and Modron Automation.
-2. This script is for the Steam PC version of the game. For the EGS PC version of the game: https://github.com/CantRowOfficial/Idle-Champions-EGS
+2. This script is for the EGS PC version of the game. For the Steam PC version of the game follow the fork back up to mikebaldi's original work.
 
 # Settings Documentation:
 
