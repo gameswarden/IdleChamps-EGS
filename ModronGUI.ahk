@@ -27,6 +27,8 @@ global ScriptVersion := "2021.09.26.1" ; USER: Cut and paste these in Discord wh
 ; // 20210925 1 - Verticalized Seats, redesigning Settings page
 ; // 20210926 1 - Adding LJs mod
 ; //            - AutoLevel and AutoUlt INI saves/loads
+; // 20211014 1 - Fixed a bug where all F-Key toggles would show as activated in settings after
+;                 every reload.
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
 
 SetWorkingDir, %A_ScriptDir% ; The working directory is the Script Directory, log files are there
@@ -66,8 +68,7 @@ global g_StopAt := []     ; LJ This array holds the Champ level at which to stop
 ; Thanks ThePuppy for the ini code
 global g_FKeys :=  ; Note: This loop reads in the seat toggles from the INI, and creates the Active Levelling Keys
 loop, 12   ; TODO: put in a function that can be called to re-string the actives when the user changes them live
-{
-    
+{    
 	IniRead, S%A_Index%, UserSettings.ini, "AutoLevel", S%A_Index%, 1
 	if (S%A_Index% == 1)
 	{
@@ -92,6 +93,10 @@ LoadFromINI(myKeyName, mydefVal, mySection := "Section1")
 	IniRead, mytemp, UserSettings.ini, %mySection%, %myKeyName%, %myDefVal%
 	return mytemp
 }
+
+; This array of variables are used as on/off switches for whether to level/not level the heroes in these seats.
+; This is used for the GUI and when saving the ini and needs to be filled after loading the data.
+global gSeatToggle := [S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12]
 
 ; // Let's read in all of the settings stored in the file that we need:
 global SLCD := LoadFromINI("SLCD", 999, "StopAutoAtLevel")
