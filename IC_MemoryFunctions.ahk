@@ -1,10 +1,10 @@
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
 ; //   >>>> USER WARNING:  Do NOT edit the header, it makes helping you in Discord HARDER! <<<<
 ; // Updates installed after the date below may result in the pointer addresses not being valid.
-; // Epic Games IC Version:  v0.403
+; // Epic Games IC Version:  v0.408
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
-global MF_ScriptDate    := "2021/10/13"   ; USER: Cut and paste these in Discord when asking for help
-global MF_ScriptVersion := "2021.10.13.1" ; USER: Cut and paste these in Discord when asking for help
+global MF_ScriptDate    := "2021/10/20"   ; USER: Cut and paste these in Discord when asking for help
+global MF_ScriptVersion := "2021.10.20.1" ; USER: Cut and paste these in Discord when asking for help
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
 ; // This file contains remory read functionality for Idle Champions scripting.  It also logs all
 ; // memory reads (currently partially rolled out) into a text file each day, to help with tracking
@@ -29,6 +29,7 @@ global MF_ScriptVersion := "2021.10.13.1" ; USER: Cut and paste these in Discord
 ; // 20210918 2 - more ReadMem rollouts
 ; // 20210924 1 - Initial fork update
 ; // 20211013 1 - Updated ReadCoreExp found/tested by Fenume, 3rd offset from 0x38 to 0x40
+; // 20211020 1 - Fenume's tentative fix for Hero structures change introduced by v.408
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
 
 ; This class relies on classMemory.ahk
@@ -328,7 +329,7 @@ ReadChampLvlBySlot(UpdateGUI := 0, GUIwindow := "MyWindow:", slot := 0)
     Controller := idle.getAddressFromOffsets(ptrGCbase, ptrAGCoffsets*)
     pointerArray := [0x28, 0x18, 0x10]
     var := 0x20 + (slot * 0x8)
-    pointerArray.Push(var, 0x28, 0x310)  ; 30C
+    pointerArray.Push(var, 0x28, 0x318) ; 310 -v408 ; 30C -v397?
     var := idle.read(Controller, "Int", pointerArray*)
     if UpdateGUI
     GuiControl, %GUIwindow%, ReadChampLvlBySlotID, Slot: %slot% Lvl: %var% %A_Hour%:%A_Min%:%A_Sec%.%A_MSec%
@@ -340,7 +341,7 @@ ReadChampSeatBySlot(UpdateGUI := 0, GUIwindow := "MyWindow:", slot := 0)
     Controller := idle.getAddressFromOffsets(ptrGCbase, ptrAGCoffsets*)
     pointerArray := [0x28, 0x18, 0x10]
     var := 0x20 + (slot * 0x8)
-    pointerArray.Push(var, 0x28, 0x18, 0x130) ; 128
+    pointerArray.Push(var, 0x28, 0x18, 0x130) ; 128 -v397? ; TODO may need to go to 138 for v.408
     var := idle.read(Controller, "Int", pointerArray*)
     if UpdateGUI
     GuiControl, %GUIwindow%, ReadChampSeatBySlotID, Slot: %slot% Seat: %var% %A_Hour%:%A_Min%:%A_Sec%.%A_MSec%
@@ -366,7 +367,7 @@ ReadChampLvlByID(UpdateGUI := 0, GUIwindow := "MyWindow:", ChampID := 0)
     pointerArray := [0xA0, 0x10, 0x18, 0x10]
     --ChampID
     var := 0x20 + (ChampID * 0x8)
-    pointerArray.Push(var, 0x310)  ; 30C
+    pointerArray.Push(var, 0x318) ; 310 -v408  ; 30C - v397?
     var := idle.read(Controller, "Int", pointerArray*)
     if UpdateGUI
     ++ChampID
@@ -380,7 +381,7 @@ ReadChampSeatByID(UpdateGUI := 0, GUIwindow := "MyWindow:", ChampID := 0)
     pointerArray := [0xA0, 0x10, 0x18, 0x10]
     --ChampID
     var := 0x20 + (ChampID * 0x8)
-    pointerArray.Push(var, 0x18, 0x130) ; 128
+    pointerArray.Push(var, 0x18, 0x130) ; 128-v397? ; TODO may need to go to 138 for v.408
     var := idle.read(Controller, "Int", pointerArray*)
     if UpdateGUI
     ++ChampID
@@ -394,7 +395,7 @@ ReadChampSlotByID(UpdateGUI := 0, GUIwindow := "MyWindow:", ChampID := 0)
     pointerArray := [0xA0, 0x10, 0x18, 0x10]
     --ChampID
     var := 0x20 + (ChampID * 0x08)
-    pointerArray.Push(var, 0x2E8) ; 2e4
+    pointerArray.Push(var, 0x2F0) ; 2E8 -v408 ; 2e4 -v397?
     var := idle.read(Controller, "Int", pointerArray*)
     if UpdateGUI
     ++ChampID
@@ -408,7 +409,7 @@ ReadChampBenchedByID(UpdateGUI := 0, GUIwindow := "MyWindow:", ChampID := 0)
     pointerArray := [0xA0, 0x10, 0x18, 0x10]
     --ChampID
     var := 0x20 + (ChampID * 0x8)
-    pointerArray.Push(var, 0x2F4) ; 2F0
+    pointerArray.Push(var, 0x2FC) ; 2F4 -v408 ; 2F0 -v397?
     var := idle.read(Controller, "Char", pointerArray*)
     if UpdateGUI
     ++ChampID
@@ -449,7 +450,7 @@ ReadHeroAliveBySlot(UpdateGUI := 0, GUIwindow := "MyWindow:", slot := 0)
     Controller := idle.getAddressFromOffsets(ptrGCbase, ptrAGCoffsets*)
     pointerArray := [0x28, 0x18, 0x10]
     var := 0x20 + (slot * 0x8)
-    pointerArray.Push(var, 0x239)
+    pointerArray.Push(var, 0x251) ; 239 -v408
     var := idle.read(Controller, "Char", pointerArray*)
     if UpdateGUI
     GuiControl, %GUIwindow%, ReadHeroAliveBySlotID, slot: %Slot% heroAlive: %var% %A_Hour%:%A_Min%:%A_Sec%.%A_MSec%
