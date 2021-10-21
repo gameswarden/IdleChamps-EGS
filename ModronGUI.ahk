@@ -5,7 +5,7 @@
 ; // Epic Games IC Version:  v0.403
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
 global ScriptDate    := "2021/10/20"   ; USER: Cut and paste these in Discord when asking for help
-global ScriptVersion := "2021.10.20.1" ; USER: Cut and paste these in Discord when asking for help
+global ScriptVersion := "2021.10.20.2" ; USER: Cut and paste these in Discord when asking for help
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
 ; // Modron Automation Gem Farming Script for Epic Games Store
 ; // Original by mikebaldi1980 - steam focused
@@ -31,6 +31,7 @@ global ScriptVersion := "2021.10.20.1" ; USER: Cut and paste these in Discord wh
 ; //              every reload.
 ; // 20211020 1 - Hopefully fixed/merged things correctly.
 ; //            - fix log file extension
+; //          2 - added Fenume's Pause key selector, logging currently not working, commented out
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
 
 SetWorkingDir, %A_ScriptDir% ; The working directory is the Script Directory, log files are there
@@ -76,13 +77,13 @@ loop, 12   ; TODO: put in a function that can be called to re-string the actives
 	{
 		g_FKeys = %g_FKeys%{F%A_Index%}
 	}
-    g_levToggles[A_Index] := S%A_Index%
+    g_levToggles.push(S%A_index%) ;g_levToggles[A_Index] := S%A_Index%
     ;LogMsg("INI Loaded Seat Toggle " . S%A_Index% . " = " . g_levToggles[A_Index] . ", active: " . g_FKeys, true)
 	IniRead, StopAt%A_Index%, UserSettings.ini, "StopAutoAtLevel", StopAt%A_Index%, 0 ;LJ
-	g_StopAt[A_Index] := StopAt%A_Index% ;LJ    
+	g_StopAt.push(StopAt%A_Index%) ;g_StopAt[A_Index] := StopAt%A_Index% ;LJ    
     ;LogMsg("INI Loaded Level To Toggle " . S%A_Index%Level . " = " . g_StopAt[A_Index], true)
     IniRead, AU%A_Index%, UserSettings.ini, "AutoUltimate", U%A_Index%, 0 ;LJ
-	g_ultToggles[A_Index] := AU%A_Index% ;LJ    
+	g_ultToggles.push(AU%A_Index%) ;g_ultToggles[A_Index] := AU%A_Index% ;LJ    
 }
 
 ; // LoadFromINI //////////////////////////////////////////////////////////////////////////////////
@@ -95,10 +96,6 @@ LoadFromINI(myKeyName, mydefVal, mySection := "Section1")
 	IniRead, mytemp, UserSettings.ini, %mySection%, %myKeyName%, %myDefVal%
 	return mytemp
 }
-
-; This array of variables are used as on/off switches for whether to level/not level the heroes in these seats.
-; This is used for the GUI and when saving the ini and needs to be filled after loading the data.
-global gSeatToggle := [S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12]
 
 ; // Let's read in all of the settings stored in the file that we need:
 global SLCD := LoadFromINI("SLCD", 999, "StopAutoAtLevel")
@@ -166,6 +163,20 @@ global gTestReset := 0 ;variable to test a reset function not ready for release
 
 global gfullScreen   := 1  ; LJ
 global gScreenEnable := 1  ; LJ
+
+; // From Fenume:
+;----------------- <HOTKEY
+;pause hotkey
+IniRead, PauseHotkey, UserSettings.ini, Section1, PauseHotkey, 0
+global gPauseHotkey := PauseHotkey
+
+;default Pause hotkey
+global gDefaultPauseHotkey := "SC029"
+
+if !gPauseHotkey
+	gPauseHotkey = %gDefaultPauseHotkey%
+;----------------- HOTKEY>	
+
 
 global wTitle := "Zees GemFarmer Modron for EGS (" . ScriptVersion . ")"
 LogFMsg("VERSION INFO: ModronGUI.ahk - " . wTitle)
@@ -324,6 +335,10 @@ Gui, MyWindow:Add, Button, x15 y+20 gChangeInstallLocation_Clicked, Change Insta
 strGUI := "Default installation path may be EGS client specific. If launch fails, make a " 
         . "shortcut through EGS and replace default path with new app launcher `ID."
 Gui, MyWindow:Add, Text, x+5 w%GUITabTxtW%, %strGUI%
+;----------------- <HOTKEY
+Gui, MyWindow:Add, Hotkey, % "x15 y+15 w50 h25 vgPauseHotkey gHotKeyChanged", %gPauseHotkey% 
+;Gui, MyWindow:Add, Button, x+50 gHotkeyChanged, Change Pause hotkey
+;----------------- HOTKEY>
 
 Gui, Tab, Help
 ;Gui, MyWindow:Font, w700
@@ -557,6 +572,32 @@ Gui, InstallGUI:Add, Edit, vNewInstallPath x15 y+10 w%GUITabTxtW% r5, % gInstall
 Gui, InstallGUI:Add, Button, x15 y+25 gInstallOK_Clicked, Save and `Close
 Gui, InstallGUI:Add, Button, x+100 gInstallCancel_Clicked, `Cancel
 
+;----------------- <HOTKEY
+Hotkey, %gPauseHotkey%, PauseScript, On
+
+HotkeyChanged()
+{
+    ;str := "Hotkey changed: " gPauseHotkey
+    ;LogMsg("Hotkey changed: " gPauseHotkey, true)
+	Hotkey, %gPauseHotkey%, PauseScript, Off
+	Gui, Submit, NoHide
+	if (!gPauseHotkey)
+	{
+		gPauseHotkey = %gDefaultPauseHotkey%
+		GuiControl,, msctls_hotkey321, SC029
+        ;LogMsg("Hotkey changed: " gPauseHotkey, true)
+	}
+	Hotkey, %gPauseHotkey%, PauseScript, On
+}
+
+PauseScript()
+{
+	Pause
+	gPrevLevelTime := A_TickCount
+	return
+}
+;----------------- HOTKEY>
+
 InstallCancel_Clicked:
 {
     GuiControl, InstallGUI:, NewInstallPath, %gInstallPath%
@@ -752,6 +793,10 @@ Save_Clicked:
     gSCGoldCount := 99
     GuiControl, MyWindow:, gSCGoldCountID, % gSCGoldCount
     IniWrite, %gSCGoldCount%, UserSettings.ini, Section1, SCGoldCount
+    ;----------------- <HOTKEY
+	GuiControl, MyWindow:, msctls_hotkey321, % gPauseHotkey
+	IniWrite, %gPauseHotkey%, UserSettings.ini, Section1, PauseHotkey	
+	;----------------- <HOTKEY
     return
 }
 
@@ -772,8 +817,9 @@ Run_Clicked:
 
 Pause_Clicked:
 {
-    Pause
-    gPrevLevelTime := A_TickCount
+    PauseScript()
+    ;Pause
+    ;gPrevLevelTime := A_TickCount
     return
 }
 
@@ -818,9 +864,13 @@ MyWindowGuiClose()
 }
 
 $~::
-    Pause
-    gPrevLevelTime := A_TickCount
-return
+{
+    PauseScript()
+    return
+}
+;    Pause
+;    gPrevLevelTime := A_TickCount
+;return
 
 Edit_Prepend(handl, Text ) 
 { ;www.autohotkey.com/community/viewtopic.php?p=565894#p565894
