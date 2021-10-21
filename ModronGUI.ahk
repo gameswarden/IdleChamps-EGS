@@ -4,8 +4,8 @@
 ; // Updates installed after the date below may result in the pointer addresses not being valid.
 ; // Epic Games IC Version:  v0.403
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
-global ScriptDate    := "2021/09/26"   ; USER: Cut and paste these in Discord when asking for help
-global ScriptVersion := "2021.09.26.1" ; USER: Cut and paste these in Discord when asking for help
+global ScriptDate    := "2021/10/20"   ; USER: Cut and paste these in Discord when asking for help
+global ScriptVersion := "2021.10.20.1" ; USER: Cut and paste these in Discord when asking for help
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
 ; // Modron Automation Gem Farming Script for Epic Games Store
 ; // Original by mikebaldi1980 - steam focused
@@ -28,7 +28,9 @@ global ScriptVersion := "2021.09.26.1" ; USER: Cut and paste these in Discord wh
 ; // 20210926 1 - Adding LJs mod
 ; //            - AutoLevel and AutoUlt INI saves/loads
 ; // 20211014 1 - Fixed a bug where all F-Key toggles would show as activated in settings after
-;                 every reload.
+; //              every reload.
+; // 20211020 1 - Hopefully fixed/merged things correctly.
+; //            - fix log file extension
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
 
 SetWorkingDir, %A_ScriptDir% ; The working directory is the Script Directory, log files are there
@@ -829,7 +831,7 @@ Edit_Prepend(handl, Text )
     return
 }
 
-global fLog := "Zlog.txt"
+global fLog := "Zlog.txt"  ; TODO figure out why this line does not actually actuall get called, that is fLog is undefined
 LogMsg(msg, display := false)
 {
     FormatTime, CurrentTime, , yyyyMMdd HH:mm:ss
@@ -840,7 +842,7 @@ LogMsg(msg, display := false)
         Edit_Prepend(hZlog, TSmsg)
     }
     FormatTime, today, , yyyyMMdd
-    nFn := today " " fLog
+    nFn := today " ZMainlog.txt"
     FileAppend, %TSmsg%, %nFn%
     return
 }
