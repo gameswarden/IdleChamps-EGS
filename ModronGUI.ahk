@@ -2,10 +2,10 @@
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
 ; //   >>>> USER WARNING:  Do NOT edit the header, it makes helping you in Discord HARDER! <<<<
 ; // Updates installed after the date below may result in the pointer addresses not being valid.
-; // Epic Games IC Version:  v0.408
+; // Epic Games IC Version:  v0.410
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
-global ScriptDate    := "2021/10/21"   ; USER: Cut and paste these in Discord when asking for help
-global ScriptVersion := "2021.10.21.1" ; USER: Cut and paste these in Discord when asking for help
+global ScriptDate    := "2021/10/29"   ; USER: Cut and paste these in Discord when asking for help
+global ScriptVersion := "2021.10.29.1" ; USER: Cut and paste these in Discord when asking for help
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
 ; // Modron Automation Gem Farming Script for Epic Games Store
 ; // Original by mikebaldi1980 - steam focused, this version attempts to stay consistent
@@ -19,7 +19,7 @@ global ScriptVersion := "2021.10.21.1" ; USER: Cut and paste these in Discord wh
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
 ; // Changes
 ; // 20211021 1 - Pulling in Mike's stuff updated as of today
-; // 
+; // 20211029 1 - Synchronizing with Mike's 10/26/21 changes
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
 
 SetWorkingDir, %A_ScriptDir% ; The working directory is the Script Directory, log files are there
@@ -1296,6 +1296,10 @@ StackNormal()
         if (ReadResettting(1) OR ReadCurrentZone(1) = 1)
             Return
     }
+    ;code from ljmjollni, untested by me, purpose: fall back to allow familiars to load when under attack.
+    DirectedInput("{Right}")
+    Sleep 100
+    DirectedInput("g")
 }
 
 StackFarm()
