@@ -1334,7 +1334,7 @@ StackNormal()
             DirectedInput("{Right}")
         Sleep 1000
         UpdateStatTimers()
-        if (ReadResettting(1) OR ReadCurrentZone(1) = 1)
+        if (ReadResetting(1) OR ReadCurrentZone(1) = 1)
             Return
     }
 }
@@ -1633,7 +1633,7 @@ GemFarm()
          
         StuffToSpam(1, gLevel_Number)
 
-        if (ReadResettting(1))
+        if (ReadResetting(1))
         {
             ModronReset()
             LoadingZoneOne() 
@@ -1732,7 +1732,7 @@ ModronReset()
     StartTime := A_TickCount
     ElapsedTime := 0
     UpdateStatusEdit("Modron Reset") ;GuiControl, MyWindow:, gloopID, Modron Reset
-    while (ReadResettting(1) AND ElapsedTime < 180000)
+    while (ReadResetting(1) AND ElapsedTime < 180000)
     {
         Sleep, 250
         ElapsedTime := UpdateElapsedTime(StartTime)
@@ -1762,7 +1762,7 @@ EndAdventure(restartdelay_ms = 1)   ; delay in milliseconds before readString()
     StartTime := A_TickCount
     ElapsedTime := 0
     UpdateStatusEdit("Manually Ending Adventure") ;GuiControl, MyWindow:, gloopID, Manually Ending Adventure
-    while(!ReadResettting(1) AND ElapsedTime < 30000)
+    while(!ReadResetting(1) AND ElapsedTime < 30000)
     {
         WinActivate, ahk_exe IdleDragons.exe
         MouseClick, Left, xClick, yClick, 1
