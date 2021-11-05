@@ -281,11 +281,11 @@ ReadCoreXP(UpdateGUI := 0, GUIwindow := "MyWindow:")
 ;}
 
 ; // ReadResetting ////////////////////////////////////////////////////////////////////////////////
-global offsetReset := [0x10, 0x38, 0x38] ; These are the offsets to get "ReadResettting"
+global offsetReset := [0x10, 0x38, 0x38] ; These are the offsets to get "ReadResetting"
 global lastReset   := 0 ; We'll store last read value here so that logfile shows transition
-ReadResettting(UpdateGUI := 0, GUIwindow := "MyWindow:")
+ReadResetting(UpdateGUI := 0, GUIwindow := "MyWindow:")
 {
-    return ReadMem(lastReset, "ReadResettting", offsetReset, UpdateGUI, GUIwindow, "Char") 
+    return ReadMem(lastReset, "ReadResetting", offsetReset, UpdateGUI, GUIwindow, "Char") 
 }
 
 ; // ReadUserID ///////////////////////////////////////////////////////////////////////////////////

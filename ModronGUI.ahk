@@ -1293,7 +1293,7 @@ StackNormal()
         }
         Sleep 1000
         UpdateStatTimers()
-        if (ReadResettting(1) OR ReadCurrentZone(1) = 1)
+        if (ReadResetting(1) OR ReadCurrentZone(1) = 1)
             Return
     }
     ;code from ljmjollni, untested by me, purpose: fall back to allow familiars to load when under attack.
@@ -1553,7 +1553,7 @@ GemFarm()
          
         StuffToSpam(1, gLevel_Number)
 
-        if (ReadResettting(1))
+        if (ReadResetting(1))
         {
             ModronReset()
             LoadingZoneOne() 
@@ -1662,7 +1662,7 @@ ModronReset()
     StartTime := A_TickCount
     ElapsedTime := 0
     GuiControl, MyWindow:, gloopID, Modron Reset
-    while (ReadResettting(1) AND ElapsedTime < 60000)
+    while (ReadResetting(1) AND ElapsedTime < 60000)
     {
         Sleep, 250
         ElapsedTime := UpdateElapsedTime(StartTime)
@@ -1706,7 +1706,7 @@ EndAdventure()
     StartTime := A_TickCount
     ElapsedTime := 0
     GuiControl, MyWindow:, gloopID, Manually Ending Adventure
-    while(!ReadResettting(1) AND ElapsedTime < 30000)
+    while(!ReadResetting(1) AND ElapsedTime < 30000)
     {
         WinActivate, ahk_exe IdleDragons.exe
         MouseClick, Left, xClick, yClick, 1
