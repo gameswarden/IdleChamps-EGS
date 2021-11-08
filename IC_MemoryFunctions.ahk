@@ -102,10 +102,10 @@ PTRArray2String(Byref ptrArray)
 ; // simply the window title.
 ; // hProcessCopy is an optional variable in which the opened handled is stored.
 ; // TODO: use isHandleValid() on the stored handle to determine whether it is valid :TODO
-OpenProcess()
+OpenProcess(windowName := "ahk_exe IdleDragons.exe")
 {
     LogFMsg("VERSION INFO: IC_Memoryfunctions.ahk (" . MF_ScriptVersion . ")" )
-    idle := new _ClassMemory("ahk_exe IdleDragons.exe", "", hProcessCopy)
+    idle := new _ClassMemory(windowName, "", hProcessCopy)
     LogFMsg("In OpenProcess()       hProcesscopy = " . hProcessCopy)
 }
 
