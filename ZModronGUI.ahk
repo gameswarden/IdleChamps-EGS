@@ -1825,7 +1825,7 @@ StuffToSpam(SendRight := 1, zoneNum := 1, hew := 1, formation := "")
         var := var "{Ctrl down}``{Ctrl up}"
     else if (gbCDLeveling)
         var := var "``"
-    if (gStopLevZone > zoneNum)
+    if (!gStopLevZone || gStopLevZone > zoneNum)
         ;var := var g_FKeys
         var := BuildLevelKeys(zoneNum) ;LJ gFKeys
     if (gHewUlt AND hew)
