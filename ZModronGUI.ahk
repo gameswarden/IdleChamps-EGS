@@ -4,8 +4,8 @@
 ; // Updates installed after the date below may result in the pointer addresses not being valid.
 ; // Epic Games IC Version:  v0.408
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
-global ScriptDate    := "2021/10/21"   ; USER: Cut and paste these in Discord when asking for help
-global ScriptVersion := "2021.10.21.1" ; USER: Cut and paste these in Discord when asking for help
+global ScriptDate    := "2021/11/10"   ; USER: Cut and paste these in Discord when asking for help
+global ScriptVersion := "2021.11.10.1" ; USER: Cut and paste these in Discord when asking for help
 ; /////////////////////////////////////////////////////////////////////////////////////////////////
 ; // Modron Automation Gem Farming Script for Epic Games Store
 ; // Original by mikebaldi1980 - steam focused
@@ -118,6 +118,7 @@ global gStackFailConvRecovery := LoadFromINI("StackFailConvRecovery", 0) ;Stack 
 global gSwapSleep := LoadFromINI("SwapSleep", 1500) ;Briv swap sleep time
 global gRestartStackTime := LoadFromINI("RestartStackTime", 12000) ;Restart stack sleep time
 global gModronResetCheckEnabled := LoadFromINI("ModronResetCheckEnabled" , 0) ;Modron Reset Check
+global gCoreTargetArea := LoadFromINI("CoreTargetArea", 50) ;global to help protect against script attempting to stack farm immediately before a modron reset
 global gSBTimeMax := LoadFromINI("SBTimeMax", 60000) ;Normal SB farm max time
 global gDoChests := LoadFromINI("DoChests", 0) ;Enable servecalls to open chests during stack restart
 global gSCMinGemCount := LoadFromINI("SCMinGemCount", 0) ;Minimum gems to save when buying chests
@@ -157,8 +158,6 @@ global gRedGemsStart   :=
 
 global gStackCountH    :=
 global gStackCountSB   :=
-
-global gCoreTargetArea := ;global to help protect against script attempting to stack farm immediately before a modron reset
 
 global gTestReset := 0 ;variable to test a reset function not ready for release
 
@@ -331,7 +330,9 @@ Gui, MyWindow:Add, Checkbox, vgbCDLeveling Checked%gbCDLeveling% x15 y+5, `Unche
 Gui, MyWindow:Add, Checkbox, vgb100xCDLev Checked%gb100xCDLev% x15 y+5, Enable ctrl (x100) leveling of `click damage
 Gui, MyWindow:Add, Checkbox, vgbSFRecover Checked%gbSFRecover% x15 y+5, Enable manual resets to recover from failed Briv stacking
 Gui, MyWindow:Add, Checkbox, vgStackFailConvRecovery Checked%gStackFailConvRecovery% x15 y+5, Enable manual resets to recover from failed Briv stack conversion
-Gui, MyWindow:Add, Checkbox, vgModronResetCheckEnabled Checked%gModronResetCheckEnabled% x15 y+5, Have script check for Modron reset level
+Gui, MyWindow:Add, Edit, vgCoreTargetArea x15 y+5 w45, % gCoreTargetArea
+Gui, MyWindow:Add, Text, x+5, Core Target Area
+Gui, MyWindow:Add, Checkbox, vgModronResetCheckEnabled Checked%gModronResetCheckEnabled% x+5, Have script check for Modron reset level
 Gui, MyWindow:Add, Button, x15 y+20 gChangeInstallLocation_Clicked, Change Install Path
 strGUI := "Default installation path may be EGS client specific. If launch fails, make a " 
         . "shortcut through EGS and replace default path with new app launcher `ID."
@@ -381,6 +382,8 @@ Gui, MyWindow:Add, Text, x15 y+5, Enable manual resets to recover from failed Br
 Gui, MyWindow:Add, Text, vgStackFailConvRecoveryID x+2 w%GUITabTxtW%, % gStackFailConvRecovery
 Gui, MyWindow:Add, Text, x15 y+5, Enable script to check for Modron reset level:
 Gui, MyWindow:Add, Text, vgModronResetCheckenabledID x+2 w%GUITabTxtW%, % gModronResetCheckEnabled
+Gui, MyWindow:Add, Text, x15 y+5, Core Reset Level:
+Gui, MyWindow:Add, Text, vgCoreTargetAreaID x+2 w%GUITabTxtW%, % gCoreTargetArea
 Gui, MyWindow:Add, Text, x15 y+10, Install Path:
 Gui, MyWindow:Add, Edit, vICPath x15 y+10 w%GUITabTxtW%, % gInstallPath
 Gui, MyWindow:Add, Text, +wrap w450 vgInstallPathID x15 y+2 w%GUITabTxtW% r3, % gInstallPath
@@ -769,6 +772,8 @@ Save_Clicked:
     IniWrite, %gRestartStackTime%, UserSettings.ini, Section1, RestartStackTime
     GuiControl, MyWindow:, gModronResetCheckEnabledID, % gModronResetCheckEnabled
     IniWrite, %gModronResetCheckEnabled%, UserSettings.ini, Section1, ModronResetCheckEnabled
+    GuiControl, MyWindow:, gCoreTargetAreaID, % gCoreTargetArea
+    IniWrite, %gCoreTargetArea%, UserSettings.ini, Section1, CoreTargetArea
     GuiControl, MyWindow:, gDoChestsID, % gDoChests
     IniWrite, %gDoChests%, UserSettings.ini, Section1, DoChests
     gSCMinGemCount := NewSCMinGemCount
@@ -1622,7 +1627,7 @@ GemFarm()
                 SpamUlts(false)
         }
 
-        ;GemFarmStacking()
+        GemFarmStacking(gLevel_Number)
 
 
         if (!Mod(gLevel_Number, 5) AND Mod(ReadHighestZone(1), 5) AND !ReadTransitioning(1))
@@ -1720,7 +1725,12 @@ CheckifStuck(zoneNum)
         SetLastZone(zoneNum) ; TODO: why is CheckifStuck updating the GUI? work outside scope of functionality
         gPrevLevelTime := A_TickCount ; TODO: we seem to reset this all over the place, source of unnecessary state complexity
     }
-    
+
+    if (!ReadQuestRemaining(1) AND !ReadTransitioning(1)) ; We've been here 30 seconds, we're not transitioning, and there are no quests remaining.  Auto-advance got stuck off.
+    {
+        DirectedInput("g")
+    }
+
     RestartGame(GetZoneTime() > 60, true)
     gPrevLevelTime := A_TickCount
     ;RestartGame(ReadChampLvlByID(1, "MyWindow:", 58) < 100, true)
